@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Inventario{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Inventario General</h1>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">P</div>
+        <div class="stat-info">
+            <h3>{{ productos.count }}</h3>
+            <p>Productos activos</p>
+        </div>
+    </div>
+
+    <div class="stat-card blue">
+        <div class="stat-icon">S</div>
+        <div class="stat-info">
+            <h3>{{ total_stock|default:"0" }}</h3>
+            <p>Stock total acumulado</p>
+        </div>
+    </div>
+
+    <div class="stat-card orange">
+        <div class="stat-icon">C</div>
+        <div class="stat-info">
+            <h3>{{ criticos }}</h3>
+            <p>Productos críticos</p>
+        </div>
+    </div>
+
+    <div class="stat-card red">
+        <div class="stat-icon">A</div>
+        <div class="stat-info">
+            <h3>{{ agotados }}</h3>
+            <p>Productos agotados</p>
+        </div>
+    </div>
+</div>
+
+<div class="filters-bar">
+    <form method="get" class="filters">
+        <select name="categoria" class="filter-select">
+            <option value="">Categoría</option>
+            {% for c in categorias %}
+            <option value="{{ c.id }}" {% if request.GET.categoria == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="estado" class="filter-select">
+            <option value="">Estado</option>
+            <option value="agotado" {% if request.GET.estado == "agotado" %}selected{% endif %}>Agotado</option>
+            <option value="critico" {% if request.GET.estado == "critico" %}selected{% endif %}>Crítico</option>
+            <option value="bajo" {% if request.GET.estado == "bajo" %}selected{% endif %}>Bajo</option>
+            <option value="normal" {% if request.GET.estado == "normal" %}selected{% endif %}>Normal</option>
+        </select>
+
+        <input type="text" name="busqueda" class="filter-select" placeholder="Buscar por nombre o código" value="{{ request.GET.busqueda }}">
+
+        <button class="btn-primary">Aplicar filtros</button>
+    </form>
+</div>
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Código</th>
+                <th>Categoría</th>
+                <th>Unidad</th>
+                <th>Stock</th>
+                <th>Stock mínimo</th>
+                <th>Proveedor</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for p in productos %}
+            <tr>
+                <td class="product-cell">
+                    <span class="product-icon">•</span> 
+                    {{ p.nombre }}
+                </td>
+
+                <td>{{ p.codigo }}</td>
+
+                <td>{{ p.categoria.nombre }}</td>
+
+                <td>{{ p.get_unidad_medida_display }}</td>
+
+                <td>
+                    {% if p.stock_estado == "agotado" %}
+                        <span class="stock-critical">0</span>
+                    {% else %}
+                        {{ p.stock_actual }}
+                    {% endif %}
+                </td>
+
+                <td>{{ p.stock_minimo }}</td>
+
+                <td>{{ p.proveedor.nombre|default:"Sin proveedor" }}</td>
+
+                <td>
+                    {% if p.stock_estado == "agotado" %}
+                        <span class="badge danger">Agotado</span>
+                    {% elif p.stock_estado == "critico" %}
+                        <span class="badge danger">Crítico</span>
+                    {% elif p.stock_estado == "bajo" %}
+                        <span class="badge warning">Bajo</span>
+                    {% else %}
+                        <span class="badge success">Normal</span>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

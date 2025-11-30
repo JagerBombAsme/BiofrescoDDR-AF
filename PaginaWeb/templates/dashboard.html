@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Biofresco{% endblock %}
+
+{% block content %}
+<h1>Dashboard - Resumen General</h1>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card green">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+            <h3>{{ total_productos }}</h3>
+            <p>Productos activos</p>
+        </div>
+    </div>
+    
+    <div class="stat-card blue">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+            <h3>{{ total_stock|floatformat:0 }}</h3>
+            <p>Stock total</p>
+        </div>
+    </div>
+    
+    <div class="stat-card orange">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-info">
+            <h3>{{ alertas_activas }}</h3>
+            <p>Alertas activas</p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="activity-card">
+    <h3>Actividad Reciente</h3>
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movimientos_recientes %}
+            <tr>
+                <td>{{ mov.fecha|date:"d/m/Y H:i" }}</td>
+                <td>{{ mov.producto.nombre }}</td>
+                <td>
+                    <span class="badge {% if mov.tipo == 'entrada' %}success{% elif mov.tipo == 'salida' %}info{% else %}danger{% endif %}">
+                        {{ mov.get_tipo_display }}
+                    </span>
+                </td>
+                <td>{{ mov.cantidad }} {{ mov.producto.get_unidad_medida_display }}</td>
+                <td>{{ mov.usuario.username }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
