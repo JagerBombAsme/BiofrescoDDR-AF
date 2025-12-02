@@ -224,6 +224,7 @@ body {
 }
 
 .stat-card {
+    position: relative;
     background: var(--surface);
     border-radius: 8px;
     border: 1px solid var(--border);
@@ -232,7 +233,7 @@ body {
     align-items: stretch;
     min-height: 140px;
     overflow: hidden;
-    transition: transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
@@ -243,11 +244,14 @@ body {
 .stat-card__media {
     position: relative;
     min-height: 120px;
-    --card-image: none;
+    --card-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(58, 123, 213, 0.08));
     background-image:
-        var(--card-image),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(58, 123, 213, 0.12));
-    background-size: cover, 100% 100%;
+        linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(58, 123, 213, 0.14)),
+        linear-gradient(135deg, transparent 46%, rgba(255, 255, 255, 0.42) 50%, transparent 54%),
+        linear-gradient(-135deg, transparent 46%, rgba(255, 255, 255, 0.32) 50%, transparent 54%),
+        linear-gradient(to right, rgba(11, 12, 16, 0.18), var(--surface) 78%),
+        var(--card-image);
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
     isolation: isolate;
@@ -256,18 +260,21 @@ body {
 .stat-card__media::before {
     content: "";
     position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, rgba(255, 255, 255, 0.28), rgba(58, 123, 213, 0.18));
-    filter: blur(22px);
+    inset: 12px 12px auto 12px;
+    height: 56%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.32), rgba(58, 123, 213, 0.12));
+    clip-path: polygon(0 0, 100% 0, 50% 62%);
     opacity: 0.7;
-    z-index: -1;
 }
 
 .stat-card__media::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(to right, rgba(11, 12, 16, 0.15), var(--surface) 78%);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 60%),
+        linear-gradient(225deg, rgba(255, 255, 255, 0.08), transparent 60%);
+    mix-blend-mode: screen;
 }
 
 .stat-card__content {
