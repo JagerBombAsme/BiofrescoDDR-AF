@@ -44,7 +44,13 @@
                 <input type="text" placeholder="Buscar...">
             </div>
             <div class="user-info">
-                <span>Admin: {{ user.get_full_name|default:user.username }}</span>
+                {% if user.is_staff %}
+                    <span class="user-role-icon" aria-hidden="true">🛡️</span>
+                    <span>Administrador: {{ user.get_full_name|default:user.username }}</span>
+                {% else %}
+                    <span class="user-role-icon" aria-hidden="true">📦</span>
+                    <span>Bodeguero: {{ user.get_full_name|default:user.username }}</span>
+                {% endif %}
                 <a href="{% url 'logout' %}" class="btn-logout">Salir</a>
             </div>
         </div>

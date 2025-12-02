@@ -8,26 +8,35 @@
 <!-- Stats Cards -->
 <div class="stats-grid">
     <div class="stat-card green">
-        <div class="stat-icon">📦</div>
-        <div class="stat-info">
-            <h3>{{ total_productos }}</h3>
-            <p>Productos activos</p>
+        <div class="stat-card__media" aria-hidden="true"></div>
+        <div class="stat-card__content">
+            <div class="stat-icon">📬</div>
+            <div class="stat-info">
+                <h3>{{ total_productos }}</h3>
+                <p>Productos activos</p>
+            </div>
         </div>
     </div>
-    
+
     <div class="stat-card blue">
-        <div class="stat-icon">📊</div>
-        <div class="stat-info">
-            <h3>{{ total_stock|floatformat:0 }}</h3>
-            <p>Stock total</p>
+        <div class="stat-card__media" aria-hidden="true"></div>
+        <div class="stat-card__content">
+            <div class="stat-icon">📨</div>
+            <div class="stat-info">
+                <h3>{{ total_stock|floatformat:0 }}</h3>
+                <p>Stock total</p>
+            </div>
         </div>
     </div>
-    
+
     <div class="stat-card orange">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-info">
-            <h3>{{ alertas_activas }}</h3>
-            <p>Alertas activas</p>
+        <div class="stat-card__media" aria-hidden="true"></div>
+        <div class="stat-card__content">
+            <div class="stat-icon">✉️</div>
+            <div class="stat-info">
+                <h3>{{ alertas_activas }}</h3>
+                <p>Alertas activas</p>
+            </div>
         </div>
     </div>
 </div>
