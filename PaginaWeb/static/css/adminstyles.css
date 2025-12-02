@@ -122,28 +122,6 @@ body {
     gap: 12px;
 }
 
-.user-display {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-}
-
-.user-name-icon {
-    width: 30px;
-    height: 30px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: var(--surface-alt);
-    border: 1px solid var(--border);
-}
-
-.user-name-text {
-    color: var(--text);
-}
-
 .user-role-icon {
     width: 36px;
     height: 36px;
