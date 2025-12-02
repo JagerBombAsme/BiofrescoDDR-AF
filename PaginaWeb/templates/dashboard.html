@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Dashboard - Biofresco{% endblock %}
 
@@ -7,7 +8,8 @@
 
 <!-- Stats Cards -->
 <div class="stats-grid">
-    <div class="stat-card green">
+    <div class="stat-card green"
+     style="--card-image: url('{% static 'img/productos.png' %}');">
         <div class="stat-card__media" aria-hidden="true">
             <div class="stat-card__image-lines">
                 <span></span>
@@ -17,7 +19,7 @@
             </div>
         </div>
         <div class="stat-card__content">
-            <div class="stat-icon">📬</div>
+            <div class="stat-icon">📦</div>
             <div class="stat-info">
                 <h3>{{ total_productos }}</h3>
                 <p>Productos activos</p>
@@ -35,7 +37,7 @@
             </div>
         </div>
         <div class="stat-card__content">
-            <div class="stat-icon">📨</div>
+            <div class="stat-icon">📊</div>
             <div class="stat-info">
                 <h3>{{ total_stock|floatformat:0 }}</h3>
                 <p>Stock total</p>
@@ -53,7 +55,7 @@
             </div>
         </div>
         <div class="stat-card__content">
-            <div class="stat-icon">✉️</div>
+            <div class="stat-icon">⚠️</div>
             <div class="stat-info">
                 <h3>{{ alertas_activas }}</h3>
                 <p>Alertas activas</p>
