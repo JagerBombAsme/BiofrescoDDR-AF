@@ -122,6 +122,28 @@ body {
     gap: 12px;
 }
 
+.user-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.user-name-icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+}
+
+.user-name-text {
+    color: var(--text);
+}
+
 .user-role-icon {
     width: 36px;
     height: 36px;
@@ -267,6 +289,24 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     isolation: isolate;
+}
+
+.stat-card__image-lines {
+    position: absolute;
+    inset: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    opacity: 0.9;
+}
+
+.stat-card__image-lines span {
+    display: block;
+    height: 10px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.08));
+    filter: blur(1px);
 }
 
 .stat-card__media::before {
