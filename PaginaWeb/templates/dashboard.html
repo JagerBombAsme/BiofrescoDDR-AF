@@ -27,9 +27,8 @@
             Total de productos actualmente registrados en el sistema.
         </div>
     </div>
-
-    <!-- TARJETA 2 -->
-    <div class="stat-card vertical blue">
+    <div class="stat-card vertical blue"
+            style="--card-image: url('{% static 'img/inventario.png' %}');">
 
         <div class="stat-card__media" aria-hidden="true"></div>
 
@@ -47,17 +46,20 @@
     </div>
 
     <!-- TARJETA 3 -->
-    <div class="stat-card vertical orange">
+        <div class="stat-card vertical orange"
+            style="--card-image: url('{% static 'img/alerta.jpg' %}');">
 
-        <div class="stat-card__media" aria-hidden="true"></div>
+            <div class="stat-card__media" aria-hidden="true"
+                style="background-position: center 35%;"></div>
 
-        <div class="stat-card__content">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-info">
-                <h3>{{ alertas_activas }}</h3>
-                <p>Alertas activas</p>
+            <div class="stat-card__content">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <h3>{{ alertas_activas }}</h3>
+                    <p>Alertas activas</p>
+                </div>
             </div>
-        </div>
+
 
         <div class="stat-description">
             Alertas asociadas a stock bajo, fechas críticas o movimientos recientes.
