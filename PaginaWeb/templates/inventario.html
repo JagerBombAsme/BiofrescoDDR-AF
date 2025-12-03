@@ -8,8 +8,11 @@
 </div>
 
 <div class="stats-grid">
-    <div class="stat-card">
+
+    
+    <div class="stat-card vertical">
         <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">P</div>
             <div class="stat-info">
@@ -17,10 +20,16 @@
                 <p>Productos activos</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Cantidad total de productos registrados y activos en el inventario.
+        </div>
     </div>
 
-    <div class="stat-card blue">
+    
+    <div class="stat-card vertical blue">
         <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">S</div>
             <div class="stat-info">
@@ -28,10 +37,16 @@
                 <p>Stock total acumulado</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Sumatoria del stock disponible considerando todos los productos.
+        </div>
     </div>
 
-    <div class="stat-card orange">
+    
+    <div class="stat-card vertical orange">
         <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">C</div>
             <div class="stat-info">
@@ -39,10 +54,16 @@
                 <p>Productos críticos</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Productos con stock por debajo del mínimo y que requieren reposición urgente.
+        </div>
     </div>
 
-    <div class="stat-card red">
+    <!-- TARJETA 4 -->
+    <div class="stat-card vertical red">
         <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">A</div>
             <div class="stat-info">
@@ -50,7 +71,12 @@
                 <p>Productos agotados</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Productos sin stock disponible actualmente.
+        </div>
     </div>
+
 </div>
 
 <div class="filters-bar">

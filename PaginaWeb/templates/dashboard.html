@@ -8,16 +8,13 @@
 
 <!-- Stats Cards -->
 <div class="stats-grid">
-    <div class="stat-card green"
-     style="--card-image: url('{% static 'img/productos.png' %}');">
-        <div class="stat-card__media" aria-hidden="true">
-            <div class="stat-card__image-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
+
+    <!-- TARJETA 1 -->
+    <div class="stat-card vertical green"
+         style="--card-image: url('{% static 'img/productos.png' %}');">
+
+        <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">📦</div>
             <div class="stat-info">
@@ -25,17 +22,17 @@
                 <p>Productos activos</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Total de productos actualmente registrados en el sistema.
+        </div>
     </div>
 
-    <div class="stat-card blue">
-        <div class="stat-card__media" aria-hidden="true">
-            <div class="stat-card__image-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
+    <!-- TARJETA 2 -->
+    <div class="stat-card vertical blue">
+
+        <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">📊</div>
             <div class="stat-info">
@@ -43,17 +40,17 @@
                 <p>Stock total</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Sumatoria de existencias disponibles en todas las bodegas.
+        </div>
     </div>
 
-    <div class="stat-card orange">
-        <div class="stat-card__media" aria-hidden="true">
-            <div class="stat-card__image-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
+    <!-- TARJETA 3 -->
+    <div class="stat-card vertical orange">
+
+        <div class="stat-card__media" aria-hidden="true"></div>
+
         <div class="stat-card__content">
             <div class="stat-icon">⚠️</div>
             <div class="stat-info">
@@ -61,7 +58,12 @@
                 <p>Alertas activas</p>
             </div>
         </div>
+
+        <div class="stat-description">
+            Alertas asociadas a stock bajo, fechas críticas o movimientos recientes.
+        </div>
     </div>
+
 </div>
 
 <!-- Recent Activity -->
