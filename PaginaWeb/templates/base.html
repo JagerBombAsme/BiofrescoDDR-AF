@@ -5,69 +5,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Biofresco Admin{% endblock %}</title>
-    <link rel="stylesheet" href="{% static '/css/adminstyles.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/adminstyles.css' %}">
+    <style>
+        /* Botón de tema */
+        .theme-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--surface-alt);
+            transform: translateY(-2px);
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
-    <!-- Sidebar -->
+
     <div class="sidebar">
         <div class="logo">
             <h2>Biofresco Admin</h2>
         </div>
+
         <nav class="sidebar-nav">
-            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+
+            <a href="{% url 'dashboard' %}"
+               class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 Dashboard
             </a>
-            <a href="{% url 'inventario' %}" class="{% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">
+
+            <a href="{% url 'inventario' %}"
+               class="{% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">
                 Inventario
             </a>
-            <a href="{% url 'movimientos' %}" class="{% if request.resolver_match.url_name == 'movimientos' %}active{% endif %}">
+
+            <a href="{% url 'movimientos_lista' %}"
+               class="{% if request.resolver_match.url_name == 'movimientos_lista' %}active{% endif %}">
                 Movimientos
             </a>
-            <a href="{% url 'productos' %}" class="{% if request.resolver_match.url_name == 'productos' %}active{% endif %}">
+
+            <a href="{% url 'productos_lista' %}"
+               class="{% if request.resolver_match.url_name == 'productos_lista' %}active{% endif %}">
                 Productos
             </a>
-            <a href="{% url 'proveedores' %}" class="{% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
+
+            <a href="{% url 'proveedores' %}"
+               class="{% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
                 Proveedores
             </a>
-            <a href="{% url 'reportes' %}" class="{% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
+
+            <a href="{% url 'reportes' %}"
+               class="{% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
                 Reportes
             </a>
+
         </nav>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
+
         <!-- Top Bar -->
         <div class="topbar">
+
             <div class="search-bar">
                 <input type="text" placeholder="Buscar...">
             </div>
+
             <div class="user-info">
+                
+                <!-- Botón de cambio de tema -->
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle">
+                    <span id="theme-icon">🌙</span>
+                </button>
+
                 {% if user.is_staff %}
-                    <span class="user-role-icon" aria-hidden="true">🛡️</span>
+                    <span class="user-role-icon">🛡️</span>
                     <span class="user-display">
-                        <span class="user-name-icon" aria-hidden="true">👤</span>
-                        <span class="user-name-text">Administrador: {{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-name-icon">👤</span>
+                        <span class="user-name-text">
+                            Administrador: {{ user.get_full_name|default:user.username }}
+                        </span>
                     </span>
                 {% else %}
-                    <span class="user-role-icon" aria-hidden="true">📦</span>
+                    <span class="user-role-icon">📦</span>
                     <span class="user-display">
-                        <span class="user-name-icon" aria-hidden="true">👤</span>
-                        <span class="user-name-text">Bodeguero: {{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-name-icon">👤</span>
+                        <span class="user-name-text">
+                            Bodeguero: {{ user.get_full_name|default:user.username }}
+                        </span>
                     </span>
                 {% endif %}
+
                 <a href="{% url 'logout' %}" class="btn-logout">Salir</a>
             </div>
         </div>
 
-        <!-- Content -->
+        <!-- Content Wrapper -->
         <div class="content">
             {% block content %}{% endblock %}
         </div>
+
     </div>
 
+    <script>
+        // Función para alternar entre tema claro y oscuro
+        function toggleTheme() {
+            const root = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            const currentTheme = root.getAttribute('data-theme');
+
+            if (currentTheme === 'dark') {
+                // Cambiar a tema claro
+                root.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                // Cambiar a tema oscuro
+                root.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Cargar tema guardado al inicio
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const root = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            root.setAttribute('data-theme', savedTheme);
+            themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        })();
+    </script>
+
     <script src="{% static 'BiofrescoV1/js/admin-script.js' %}"></script>
-    {% block extra_js %}{% endblock %}
-</body>
-</html>
+
+    {% block extra_js %}
+    </body>
+    </html>
+    {% endblock %}

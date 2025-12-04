@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Movimientos de Inventario</h1>
+    <a href="{% url 'movimiento_crear' %}" class="btn-primary">Registrar Movimiento</a>
+</div>
+
+<div class="table-card">
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Unidad</th>
+                <th>Fecha</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for m in movimientos %}
+            <tr>
+
+                <td class="product-cell">
+                    <span class="product-icon">📦</span>
+                    {{ m.producto.nombre }}
+                </td>
+
+                <td>
+                    {% if m.tipo == "entrada" %}
+                        <span class="badge success">Entrada</span>
+                    {% elif m.tipo == "salida" %}
+                        <span class="badge danger">Salida</span>
+                    {% elif m.tipo == "merma" %}
+                        <span class="badge warning">Merma</span>
+                    {% else %}
+                        <span class="badge info">Ajuste</span>
+                    {% endif %}
+                </td>
+
+                <td><strong>{{ m.cantidad }}</strong></td>
+
+                <td>{{ m.unidad_ingreso.nombre }}</td>
+
+                <td>{{ m.fecha|date:"d/m/Y H:i" }}</td>
+
+                <td>{{ m.usuario }}</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align:center; padding:20px;">
+                    No hay movimientos registrados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
+{% endblock %}

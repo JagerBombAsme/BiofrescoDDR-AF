@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Registrar Movimiento</h1>
+</div>
+
+<div class="form-card">
+
+    <h3>Datos del Movimiento</h3>
+
+    <form method="post" class="product-form">
+        {% csrf_token %}
+
+        <!-- FILA 1 -->
+        <div class="form-row">
+
+            <!-- PRODUCTO -->
+            <div class="form-group">
+                <label for="producto">Producto</label>
+                <select name="producto" id="producto" required>
+                    <option value="">Seleccione un producto...</option>
+                    {% for p in productos %}
+                        <option value="{{ p.id }}" data-unidad="{{ p.unidad_base.nombre }}">
+                            {{ p.codigo }} - {{ p.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- TIPO -->
+            <div class="form-group">
+                <label for="tipo">Tipo de movimiento</label>
+                <select name="tipo" id="tipo" required>
+                    <option value="entrada">Entrada</option>
+                    <option value="salida">Salida</option>
+                    <option value="merma">Merma</option>
+                    <option value="ajuste">Ajuste</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- FILA 2 -->
+        <div class="form-row">
+            <!-- CANTIDAD -->
+            <div class="form-group">
+                <label id="labelCantidad">Cantidad</label>
+                <input type="number" step="0.01" min="0" name="cantidad" id="cantidad" required>
+                <small id="unidadTexto"></small>
+            </div>
+
+            <!-- PROVEEDOR SOLO PARA ENTRADA -->
+            <div class="form-group">
+                <label for="proveedor">Proveedor (solo entrada)</label>
+                <select name="proveedor" id="proveedor">
+                    <option value="">Opcional</option>
+                    {% for pr in proveedores %}
+                        <option value="{{ pr.id }}">{{ pr.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <!-- FILA 3 -->
+        <div class="form-row">
+
+            <!-- MOTIVO -->
+            <div class="form-group full-width">
+                <label for="motivo">Motivo</label>
+                <textarea name="motivo" id="motivo" rows="3"></textarea>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'movimientos_lista' %}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">Guardar Movimiento</button>
+        </div>
+    </form>
+
+             <p style="margin: 0; color: var(--muted); font-size: 1rem;">
+        ¿No aparece tu proveedor o aún no lo tienes registrado?
+        </p>
+
+        <a href="{% url 'proveedor_crear' %}" class="btn-primary small" style="margin-top: 6px; margin-left: 120px; display: inline-block;">
+        Haz Click aquí
+        </a>
+        </div>
+    </div>
+</div>  
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const productoSelect = document.getElementById("producto");
+    const labelCantidad = document.getElementById("labelCantidad");
+    const unidadTexto = document.getElementById("unidadTexto");
+
+    function actualizarUnidad() {
+        const selected = productoSelect.options[productoSelect.selectedIndex];
+        const unidad = selected.dataset.unidad;
+
+        if (!unidad) {
+            labelCantidad.textContent = "Cantidad";
+            unidadTexto.textContent = "";
+            return;
+        }
+
+        let pregunta = "¿Cuántos ";
+        if (unidad.endsWith("a")) pregunta = "¿Cuánta ";
+        if (unidad.endsWith("as")) pregunta = "¿Cuántas ";
+
+        labelCantidad.textContent = pregunta + unidad + "?";
+        unidadTexto.textContent = `Unidad del producto: ${unidad}`;
+    }
+
+    productoSelect.addEventListener("change", actualizarUnidad);
+});
+document.addEventListener("DOMContentLoaded", () => {
+
+    const tipo = document.getElementById("tipo");
+    const proveedor = document.getElementById("proveedor");
+    const form = document.querySelector("form");
+
+    form.addEventListener("submit", function (e) {
+
+        if (tipo.value === "entrada" && !proveedor.value) {
+            e.preventDefault();
+
+            alert("Debes seleccionar un proveedor para movimientos de entrada.");
+
+            proveedor.focus();
+        }
+
+    });
+
+});
+</script>
+
+{% endblock %}

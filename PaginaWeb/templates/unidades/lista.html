@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container card">
+    <h2>Unidades de Medida</h2>
+
+    <a href="{% url 'unidad_crear' %}" class="btn">Nueva Unidad</a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for unidad in unidades %}
+            <tr>
+                <td>{{ unidad.nombre }}</td>
+                <td>{{ unidad.descripcion }}</td>
+                <td>
+                    <a class="btn small" href="{% url 'unidad_editar' unidad.id %}">Editar</a>
+                    <a class="btn small danger" href="{% url 'unidad_eliminar' unidad.id %}">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">No hay unidades registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
