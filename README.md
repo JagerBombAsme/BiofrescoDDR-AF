@@ -1,200 +1,167 @@
-README – Guía de Instalación y Uso del Sistema de Inventario (Django)
-
-Este documento explica, paso a paso, cómo instalar, ejecutar y administrar el sistema de inventario desarrollado en Django. Está escrito en un lenguaje claro y directo, orientado a usuarios con conocimientos técnicos básicos.
-
 1. Requisitos Previos
 
-Antes de comenzar, se deben instalar las siguientes herramientas.
+Antes de ejecutar el sistema, debe cumplirse lo siguiente.
 
 1.1. Python 3.10 o Superior
 
-Lenguaje en el que está desarrollado el sistema.
+Debe descargarse e instalarse Python desde:
 
-Descarga: https://www.python.org/downloads/
+https://www.python.org/downloads/
 
-Durante la instalación, es indispensable marcar la opción:
+Durante la instalación, debe habilitarse la opción:
 
-[x] Add Python to PATH
+Add Python to PATH
 
 1.2. Visual Studio Code
 
-Editor de código recomendado para abrir y ejecutar el proyecto.
+Debe utilizarse Visual Studio Code para la gestión del proyecto.
 
-Descarga: https://code.visualstudio.com/
+Descarga:
 
-Extensión necesaria:
+https://code.visualstudio.com/
+
+Debe instalarse la extensión:
 
 Python (Microsoft)
 
+1.3. Git (Opcional)
+
+Si el proyecto se obtiene desde GitHub, Git debe estar instalado.
+
+Descarga:
+
+https://git-scm.com/downloads
 
 2. Instalación y Ejecución del Sistema
 
-Siga los siguientes pasos en orden.
+Los pasos descritos a continuación deben ejecutarse en el orden indicado.
 
-2.1. Abrir el Proyecto en Visual Studio Code
+2.1. Apertura del Proyecto
 
-Coloque la carpeta del proyecto en una ruta fácil de recordar.
+La carpeta del proyecto debe ubicarse en una ruta accesible.
 
-Abra Visual Studio Code.
+Visual Studio Code debe abrirse.
 
-Menú: File → Open Folder
+La carpeta principal del sistema debe seleccionarse mediante:
+File → Open Folder.
 
-Seleccione la carpeta principal del proyecto.
+2.2. Creación del Entorno Virtual
 
-2.2. Crear el Entorno Virtual
-
-Un entorno virtual (venv) permite aislar las librerías del proyecto.
-
-Abra la terminal en VS Code:
-
-Terminal → New Terminal
-
-
-Crear el entorno:
+Debe abrirse una terminal y ejecutar:
 
 python -m venv venv
 
 
-Activar el entorno según sistema operativo:
+El entorno virtual debe activarse según el sistema operativo:
 
-Sistema Operativo	Comando
+Sistema	Comando
 Windows	venv\Scripts\activate
-Linux / Mac	source venv/bin/activate
+Linux/Mac	source venv/bin/activate
 
-Si funciona correctamente, la terminal mostrará:
+La terminal debe mostrar el prefijo (venv).
 
-(venv) C:\ruta\del\proyecto>
+2.3. Instalación de Dependencias
 
-2.3. Instalar Dependencias
-
-Ejecutar:
+Debe ejecutarse:
 
 pip install -r requirements.txt
 
 
-Si no posee archivo requirements.txt, instalar manualmente:
+Si no existe archivo requirements.txt, deben instalarse las librerías esenciales:
 
 pip install django
 pip install openpyxl
 pip install pillow
 
-2.4. Migrar la Base de Datos
+2.4. Migraciones de Base de Datos
 
-Crear las tablas necesarias:
+Para crear las tablas del sistema, debe ejecutarse:
 
-python manage.py makemigrations
 python manage.py migrate
 
-2.5. Crear el Usuario Administrador
+2.5. Creación del Superusuario
 
-Ejecutar:
+Debe crearse un superusuario mediante:
 
 python manage.py createsuperuser
 
+2.6. Ejecución del Servidor
 
-Ingresar nombre de usuario, correo (opcional) y contraseña.
-
-2.6. Ejecutar el Servidor
-
-Iniciar el sistema:
+Debe iniciarse el servidor con:
 
 python manage.py runserver
 
 
-Acceder desde el navegador:
+El sistema debe quedar disponible en:
 
 http://127.0.0.1:8000/
 
-3. Uso del Sistema – Módulos Principales
+3. Uso del Sistema
 3.1. Acceso al Panel Administrativo
 
-Ir a:
+Debe accederse a:
 
 http://127.0.0.1:8000/admin
 
-
-Iniciar sesión con el superusuario creado.
-
-3.2. Productos
+3.2. Módulo de Productos
 
 Ruta: Inventario → Productos
 
-Permite administrar el catálogo de productos.
+En este módulo deben gestionarse:
 
-Acciones disponibles:
+creación de productos
 
-Crear productos
+edición de productos
 
-Editar productos
+eliminación (solo si no poseen movimientos registrados)
 
-Eliminar productos (si no tienen movimientos registrados)
+Estados automáticos del inventario:
 
-Campos del formulario:
-
-Código
-
-Nombre
-
-Unidad base (Kg, Unidades, Litros)
-
-Stock mínimo
-
-Descripción (opcional)
-
-Estados automáticos del producto:
-
-Estado	Descripción
-Agotado	Stock igual a 0
-Crítico	Stock menor al mínimo
-Bajo	Stock entre el mínimo y 1.5 × mínimo
-Normal	Stock mayor que 1.5 × mínimo
-3.3. Movimientos
+Estado	Condición
+Agotado	Stock = 0
+Crítico	Stock < stock mínimo
+Bajo	Stock entre mínimo y 1.5 × mínimo
+Normal	Stock > 1.5 × mínimo
+3.3. Módulo de Movimientos
 
 Ruta: Movimientos
 
-Permite actualizar el inventario mediante registros de movimiento.
+Deben registrarse operaciones de:
 
-Tipos de movimiento:
+Entrada
 
-Entrada (incrementa stock; requiere proveedor)
+Salida
 
-Salida (reduce stock)
+Merma
 
-Merma (reduce stock por pérdida)
+Ajuste
 
-Ajuste (corrección manual)
+Las Entradas deben asociarse obligatoriamente a un proveedor.
 
-3.4. Proveedores
+3.4. Módulo de Proveedores
 
 Ruta: Proveedores
 
-Permite agregar, editar e inactivar proveedores.
-Obligatorios para registrar Entradas.
+Deben administrarse proveedores activos e inactivos.
+Las Entradas requieren un proveedor válido.
 
-3.5. Transportistas
+3.5. Módulo de Transportistas
 
 Ruta: Transportistas
-Permite registrar información de logística, choferes y empresas asociadas.
+
+Debe mantenerse información de transportistas, empresas, teléfonos y patentes.
 
 3.6. Inventario General
 
 Ruta: Inventario general
 
-Muestra:
-
-Stock actual
-
-Estados del inventario
-
-Filtros por estado
-
-Búsqueda por nombre o código
+Debe utilizarse para visualizar el estado completo del inventario, filtrar por estado o buscar productos.
 
 3.7. Reportes
 
 Ruta: Reportes
 
-Exportación a Excel de:
+Deben generarse archivos Excel correspondientes a:
 
 Movimientos
 
@@ -203,30 +170,30 @@ Inventario general
 Proveedores
 
 4. Gestión Avanzada y Solución de Problemas
-4.1. Archivos Estáticos (Imágenes y CSS)
+4.1. Archivos Estáticos
 
-Las imágenes deben ubicarse en:
+Las imágenes deben almacenarse en:
 
 /static/img/
 
 
-Para utilizarlas en plantillas Django:
+Para utilizarlas en plantillas Django, debe emplearse:
 
 {% static "img/nombre_de_la_imagen.png" %}
 
-4.2. Errores Comunes
-Mensaje	Causa	Solución
-pip no se reconoce	Python no se agregó al PATH	Reinstalar Python y marcar “Add Python to PATH”
-ModuleNotFoundError	Faltan librerías	Ejecutar pip install -r requirements.txt
-Permission denied	Permisos insuficientes	Ejecutar VS Code como administrador
-4.3. Detener el Servidor
+4.2. Errores Frecuentes
+Mensaje	Causa	Acción Correctiva
+pip no se reconoce	Python no fue agregado al PATH	Reinstalar Python habilitando Add Python to PATH
+ModuleNotFoundError	Dependencias faltantes	Ejecutar pip install -r requirements.txt
+Permission denied	Permisos insuficientes	Ejecutar VS Code con permisos elevados
+4.3. Detención del Servidor
 
-Presionar:
+Debe detenerse con:
 
 CTRL + C
 
-4.4. Salir del Entorno Virtual
+4.4. Salida del Entorno Virtual
 
-Ejecutar:
+Debe ejecutarse:
 
 deactivate
