@@ -22,4 +22,7 @@ urlpatterns = [
     path('transportistas/nuevo/', views.transportista_crear, name='transportista_crear'),
     path('proveedores/editar/<int:id>/', views.proveedor_editar, name='proveedor_editar'),
     path('proveedores/eliminar/<int:id>/', views.proveedor_eliminar, name='proveedor_eliminar'),
+    path("reportes/movimientos/excel/", views.reporte_movimientos_excel, name="reporte_movimientos_excel"),
+    path("reportes/inventario/excel/", views.reporte_inventario_excel, name="reporte_inventario_excel"),
+    path("reportes/proveedores/excel/", views.reporte_proveedores_excel, name="reporte_proveedores_excel"),
 ]

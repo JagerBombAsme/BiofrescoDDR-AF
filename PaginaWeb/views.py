@@ -4,7 +4,8 @@ from django.db.models import Sum, Q, F
 from django.contrib import messages
 from datetime import datetime, timedelta
 from decimal import Decimal
-
+from openpyxl import Workbook
+from django.http import HttpResponse
 
 
 from .models import (
@@ -65,7 +66,6 @@ def proveedor_editar(request, id):
 def proveedor_eliminar(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
 
-    # OPCIONAL: impedir eliminar si tiene movimientos asociados
     tiene_mov = Movimiento.objects.filter(proveedor_id=id).exists()
     if tiene_mov:
         messages.error(request, "No puedes eliminar este proveedor porque tiene movimientos asociados.")
@@ -111,10 +111,6 @@ def dashboard(request):
 
 
 
-# ----------------------------
-# UNIDADES DE MEDIDA
-# ----------------------------
-
 @login_required
 def unidades_lista(request):
     unidades = UnidadMedida.objects.all()
@@ -159,10 +155,6 @@ def unidad_eliminar(request, id):
     return redirect("unidades_lista")
 
 
-
-# ----------------------------
-# PRODUCTOS
-# ----------------------------
 
 @login_required
 def productos_lista(request):
@@ -214,6 +206,31 @@ def producto_editar(request, id):
         "unidades": unidades
     })
 
+@login_required
+def reporte_movimientos_excel(request):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Movimientos"
+
+    ws.append(["Fecha", "Producto", "Tipo", "Cantidad", "Usuario"])
+
+    movimientos = Movimiento.objects.all().order_by("-fecha")
+
+    for m in movimientos:
+        ws.append([
+            m.fecha.strftime("%Y-%m-%d %H:%M"),
+            m.producto.nombre if m.producto else "",
+            m.tipo,
+            float(m.cantidad),
+            m.usuario.username if m.usuario else "",
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="movimientos.xlsx"'
+    wb.save(response)
+    return response
 
 @login_required
 def producto_eliminar(request, id):
@@ -229,7 +246,31 @@ def producto_eliminar(request, id):
 
 
 
+@login_required
+def reporte_inventario_excel(request):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Inventario"
 
+    ws.append(["Producto", "Código", "Stock", "Mínimo", "Estado"])
+
+    productos = Producto.objects.filter(activo=True)
+
+    for p in productos:
+        ws.append([
+            p.nombre,
+            p.codigo,
+            float(p.stock_actual),
+            float(p.stock_minimo),
+            p.estado,
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="inventario.xlsx"'
+    wb.save(response)
+    return response
 @login_required
 def movimientos_lista(request):
     movimientos = Movimiento.objects.select_related("producto", "usuario").all()
@@ -250,7 +291,28 @@ def proveedor_crear(request):
     return render(request, "proveedores/form.html")
 
 
+@login_required
+def reporte_proveedores_excel(request):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Proveedores"
 
+    ws.append(["Proveedor", "Producto"])
+
+    productos = Producto.objects.filter(activo=True)
+
+    for p in productos:
+        ws.append([
+            p.proveedor.nombre if hasattr(p, 'proveedor') else "Sin proveedor",
+            p.nombre,
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="proveedores.xlsx"'
+    wb.save(response)
+    return response
 @login_required
 def movimiento_crear(request):
     productos = Producto.objects.filter(activo=True)
