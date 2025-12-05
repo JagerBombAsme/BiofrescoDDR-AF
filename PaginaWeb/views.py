@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q, F
 from django.contrib import messages
 from datetime import datetime, timedelta
-from django.contrib.auth.models import User
 from decimal import Decimal
+
+
 
 from .models import (
     UnidadMedida,
@@ -12,41 +13,107 @@ from .models import (
     Movimiento,
     Alerta,
     Proveedor,
-    Categoria
+    Categoria,
+    Transportista
 )
 
 
 
+@login_required
+def transportistas(request):
+    transportistas = Transportista.objects.filter(activo=True)
+    return render(request, "transportistas.html", {"transportistas": transportistas})
+
+
+@login_required
+def transportista_crear(request):
+    if request.method == "POST":
+        Transportista.objects.create(
+            nombre=request.POST.get("nombre"),
+            telefono=request.POST.get("telefono"),
+            patente=request.POST.get("patente"),
+            empresa=request.POST.get("empresa"),
+            region=request.POST.get("region"),
+            activo=True,
+        )
+        messages.success(request, "Transportista creado correctamente.")
+        return redirect("transportistas")
+
+    return render(request, "transportistas/form.html")
+
+@login_required
+def proveedor_editar(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    if request.method == "POST":
+        proveedor.nombre = request.POST.get("nombre")
+        proveedor.telefono = request.POST.get("telefono")
+        proveedor.email = request.POST.get("email")
+        proveedor.direccion = request.POST.get("direccion")
+        proveedor.save()
+
+        messages.success(request, "Proveedor actualizado correctamente.")
+        return redirect("proveedores")
+
+    return render(request, "proveedores/form.html", {
+        "titulo": "Editar Proveedor",
+        "proveedor": proveedor
+    })
+
+
+@login_required
+def proveedor_eliminar(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    # OPCIONAL: impedir eliminar si tiene movimientos asociados
+    tiene_mov = Movimiento.objects.filter(proveedor_id=id).exists()
+    if tiene_mov:
+        messages.error(request, "No puedes eliminar este proveedor porque tiene movimientos asociados.")
+        return redirect("proveedores")
+
+    proveedor.activo = False
+    proveedor.save()
+    messages.success(request, "Proveedor eliminado correctamente.")
+    return redirect("proveedores")
 
 @login_required
 def dashboard(request):
     total_productos = Producto.objects.filter(activo=True).count()
-    total_stock = Producto.objects.aggregate(total=Sum('stock_actual'))['total'] or 0
+    total_stock = Producto.objects.aggregate(total=Sum("stock_actual"))["total"] or 0
     alertas_activas = Alerta.objects.filter(activa=True).count()
 
     fecha_inicio = datetime.now() - timedelta(days=30)
+
     productos_vendidos = (
-        Movimiento.objects.filter(tipo='salida', fecha__gte=fecha_inicio)
-        .values('producto__nombre')
-        .annotate(total=Sum('cantidad'))
-        .order_by('-total')[:5]
+        Movimiento.objects.filter(tipo="salida", fecha__gte=fecha_inicio)
+        .values("producto__nombre")
+        .annotate(total=Sum("cantidad"))
+        .order_by("-total")[:5]
     )
 
-    alertas_recientes = Alerta.objects.filter(activa=True)[:5]
-    movimientos_recientes = Movimiento.objects.select_related('producto', 'usuario')[:10]
+    movimientos_recientes = (
+        Movimiento.objects.select_related("producto", "usuario")
+        .order_by("-fecha")[:10]
+    )
 
-    return render(request, 'dashboard.html', {
-        'total_productos': total_productos,
-        'total_stock': total_stock,
-        'alertas_activas': alertas_activas,
-        'productos_vendidos': productos_vendidos,
-        'alertas_recientes': alertas_recientes,
-        'movimientos_recientes': movimientos_recientes,
+    movimientos_mes = Movimiento.objects.filter(fecha__gte=fecha_inicio).count()
+    alertas_recientes = Alerta.objects.filter(activa=True)[:5]
+
+    return render(request, "dashboard.html", {
+        "total_productos": total_productos,
+        "total_stock": total_stock,
+        "alertas_activas": alertas_activas,
+        "movimientos_mes": movimientos_mes,
+        "movimientos_recientes": movimientos_recientes,
+        "productos_vendidos": productos_vendidos,
+        "alertas_recientes": alertas_recientes,
     })
 
 
 
-
+# ----------------------------
+# UNIDADES DE MEDIDA
+# ----------------------------
 
 @login_required
 def unidades_lista(request):
@@ -61,7 +128,7 @@ def unidad_crear(request):
             nombre=request.POST.get("nombre"),
             descripcion=request.POST.get("descripcion"),
         )
-        messages.success(request, "Unidad de medida creada correctamente.")
+        messages.success(request, "Unidad creada correctamente.")
         return redirect("unidades_lista")
 
     return render(request, "unidades/form.html", {"titulo": "Nueva Unidad"})
@@ -93,11 +160,13 @@ def unidad_eliminar(request, id):
 
 
 
-
+# ----------------------------
+# PRODUCTOS
+# ----------------------------
 
 @login_required
 def productos_lista(request):
-    productos = Producto.objects.select_related("unidad_base").all()
+    productos = Producto.objects.select_related("unidad_base").filter(activo=True)
     return render(request, "productos/lista.html", {"productos": productos})
 
 
@@ -144,6 +213,28 @@ def producto_editar(request, id):
         "producto": producto,
         "unidades": unidades
     })
+
+
+@login_required
+def producto_eliminar(request, id):
+    producto = get_object_or_404(Producto, id=id)
+
+    if Movimiento.objects.filter(producto=producto).exists():
+        messages.error(request, "No puedes eliminar este producto porque tiene movimientos asociados.")
+        return redirect("productos_lista")
+
+    producto.delete()
+    messages.success(request, "Producto eliminado correctamente.")
+    return redirect("productos_lista")
+
+
+
+
+@login_required
+def movimientos_lista(request):
+    movimientos = Movimiento.objects.select_related("producto", "usuario").all()
+    return render(request, "movimientos/lista.html", {"movimientos": movimientos})
+
 @login_required
 def proveedor_crear(request):
     if request.method == "POST":
@@ -154,61 +245,51 @@ def proveedor_crear(request):
             direccion=request.POST.get("direccion"),
         )
         messages.success(request, "Proveedor registrado correctamente.")
-        return redirect("movimiento_crear")  
+        return redirect("proveedores")
+
     return render(request, "proveedores/form.html")
 
-
-@login_required
-def producto_eliminar(request, id):
-    producto = get_object_or_404(Producto, id=id)
-    producto.delete()
-    messages.success(request, "Producto eliminado correctamente.")
-    return redirect("productos_lista")
-
-
-
-
-
-@login_required
-def movimientos_lista(request):
-    movimientos = Movimiento.objects.select_related("producto", "usuario").all()
-    return render(request, "movimientos/lista.html", {"movimientos": movimientos})
 
 
 @login_required
 def movimiento_crear(request):
-    from decimal import Decimal
-
-    productos = Producto.objects.all()
+    productos = Producto.objects.filter(activo=True)
     proveedores = Proveedor.objects.filter(activo=True)
 
     if request.method == "POST":
 
+        # Validaciones básicas
         producto_id = request.POST.get("producto")
         tipo = request.POST.get("tipo")
         proveedor_id = request.POST.get("proveedor") or None
         motivo = request.POST.get("motivo")
+        cantidad_raw = request.POST.get("cantidad")
 
-        
         if not producto_id:
             messages.error(request, "Debe seleccionar un producto.")
             return redirect("movimiento_crear")
 
+        # Proveedor obligatorio solo en entrada
         if tipo == "entrada" and not proveedor_id:
-            messages.error(request, "Debe seleccionar un proveedor para movimientos de entrada.")
+            messages.error(request, "Debe seleccionar un proveedor.")
             return redirect("movimiento_crear")
 
-        cantidad = request.POST.get("cantidad")
-
+        # Parse cantidad
         try:
-            cantidad = Decimal(cantidad)
+            cantidad = Decimal(cantidad_raw)
         except:
             messages.error(request, "Cantidad inválida.")
             return redirect("movimiento_crear")
 
         producto_obj = Producto.objects.get(id=producto_id)
 
-        movimiento = Movimiento.objects.create(
+        # No permitir salidas sin stock
+        if tipo in ["salida", "merma"] and cantidad > producto_obj.stock_actual:
+            messages.error(request, "Stock insuficiente para realizar la operación.")
+            return redirect("movimiento_crear")
+
+        # Crear movimiento
+        Movimiento.objects.create(
             producto=producto_obj,
             tipo=tipo,
             unidad_ingreso=producto_obj.unidad_base,
@@ -216,8 +297,25 @@ def movimiento_crear(request):
             factor=Decimal(1),
             proveedor_id=proveedor_id,
             motivo=motivo,
-            usuario=request.user
+            usuario=request.user,
         )
+
+        # Actualizar stock
+        if tipo == "entrada":
+            producto_obj.stock_actual += cantidad
+        else:
+            producto_obj.stock_actual -= cantidad
+
+        producto_obj.save()
+
+        # Alertas
+        if producto_obj.stock_actual < producto_obj.stock_minimo:
+            Alerta.objects.update_or_create(
+                producto=producto_obj,
+                defaults={"activa": True}
+            )
+        else:
+            Alerta.objects.filter(producto=producto_obj).update(activa=False)
 
         messages.success(request, "Movimiento registrado correctamente.")
         return redirect("movimientos_lista")
@@ -228,48 +326,68 @@ def movimiento_crear(request):
     })
 
 
+
+
 @login_required
 def inventario(request):
-    categoria_id = request.GET.get('categoria')
-    estado = request.GET.get('estado')
-    busqueda = request.GET.get('busqueda')
+    categoria_id = request.GET.get("categoria")
+    estado = request.GET.get("estado")
+    busqueda = request.GET.get("busqueda")
 
-    productos = Producto.objects.filter(activo=True)
+    productos = Producto.objects.filter(activo=True).select_related("unidad_base")
 
-    if categoria_id:
+    # Filtrar categoría
+    if categoria_id and categoria_id.isdigit():
         productos = productos.filter(categoria_id=categoria_id)
 
-    if estado == 'critico':
-        productos = productos.filter(stock_actual__lt=F('stock_minimo'))
-    elif estado == 'bajo':
+    # Filtros por estado
+    if estado == "agotado":
+        productos = productos.filter(stock_actual__lte=0)
+
+    elif estado == "critico":
+        productos = productos.filter(stock_actual__lt=F("stock_minimo"))
+
+    elif estado == "bajo":
         productos = productos.filter(
-            stock_actual__gte=F('stock_minimo'),
-            stock_actual__lt=F('stock_minimo') * 1.5
+            stock_actual__gte=F("stock_minimo"),
+            stock_actual__lt=F("stock_minimo") * 1.5
         )
 
+    elif estado == "sobrestock":
+        productos = productos.filter(stock_actual__gte=F("stock_minimo") * 2)
+
+    # Búsqueda
     if busqueda:
         productos = productos.filter(
-            Q(nombre__icontains=busqueda) | Q(codigo__icontains=busqueda)
+            Q(nombre__icontains=busqueda) |
+            Q(codigo__icontains=busqueda)
         )
 
-    return render(request, 'inventario.html', {
-        'productos': productos,
-        'categorias': Categoria.objects.all()
+    return render(request, "inventario.html", {
+        "productos": productos.order_by("nombre"),
+        "categorias": Categoria.objects.all(),
+        "categoria_seleccionada": categoria_id,
+        "estado_seleccionado": estado,
+        "busqueda": busqueda,
+        "total_stock": productos.aggregate(total=Sum("stock_actual"))["total"] or 0,
+        "criticos": productos.filter(stock_actual__lt=F("stock_minimo")).count(),
+        "agotados": productos.filter(stock_actual__lte=0).count(),
     })
+
 
 
 @login_required
 def proveedores(request):
     proveedores = Proveedor.objects.filter(activo=True)
-    return render(request, 'proveedores.html', {"proveedores": proveedores})
+    return render(request, "proveedores.html", {"proveedores": proveedores})
 
 
 @login_required
 def reportes(request):
-    return render(request, 'reportes.html')
+    return render(request, "reportes.html")
 
 
 @login_required
 def alertas(request):
-    alertas = Alerta.objects.filter(activa=True).select_related('producto')
-    return render(request, 'alertas.html', {"alertas": alertas})
+    alertas = Alerta.objects.filter(activa=True).select_related("producto")
+    return render(request, "alertas.html", {"alertas": alertas})

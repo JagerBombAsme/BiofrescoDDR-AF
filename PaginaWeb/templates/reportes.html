@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Reportes{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Reportes</h1>
+</div>
+
+<div class="stats-grid">
+
+    <div class="stat-card vertical">
+        <div class="stat-card__media" aria-hidden="true"></div>
+        <div class="stat-card__content">
+            <div class="stat-icon">M</div>
+            <div class="stat-info">
+                <h3>Movimientos</h3>
+                <p>Entradas y salidas por rango de fechas</p>
+            </div>
+        </div>
+        <div class="stat-description">
+            Genera un reporte de todos los movimientos (entradas, salidas, mermas, ajustes) entre dos fechas específicas.
+        </div>
+    </div>
+
+    <div class="stat-card vertical blue">
+        <div class="stat-card__media" aria-hidden="true"></div>
+        <div class="stat-card__content">
+            <div class="stat-icon">I</div>
+            <div class="stat-info">
+                <h3>Inventario</h3>
+                <p>Estado actual de stock</p>
+            </div>
+        </div>
+        <div class="stat-description">
+            Exporta el estado actual del inventario con stock, mínimos, críticos y productos agotados.
+        </div>
+    </div>
+
+    <div class="stat-card vertical orange">
+        <div class="stat-card__media" aria-hidden="true"></div>
+        <div class="stat-card__content">
+            <div class="stat-icon">P</div>
+            <div class="stat-info">
+                <h3>Proveedores</h3>
+                <p>Relación proveedor–producto</p>
+            </div>
+        </div>
+        <div class="stat-description">
+            Consulta qué proveedores están asociados a cada producto y genera una hoja de contacto rápida.
+        </div>
+    </div>
+
+</div>
+
+<div class="form-card">
+    <h3>Generar reporte de movimientos</h3>
+
+    <form method="get" class="product-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Fecha desde</label>
+                <input type="date" name="desde">
+            </div>
+            <div class="form-group">
+                <label>Fecha hasta</label>
+                <input type="date" name="hasta">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Ver reporte en pantalla</button>
+            <button type="button" class="btn-secondary">Exportar a Excel (futuro)</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

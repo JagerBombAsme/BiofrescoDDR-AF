@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mapa de Transportistas - Biofresco{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 24px 32px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .page-header h1 {
+        color: white;
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-back {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-back:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .stat-mini {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+    }
+
+    .stat-mini:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+
+    .stat-mini.active { 
+        border-left-color: #27ae60;
+        background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+    }
+    .stat-mini.transit { 
+        border-left-color: #3498db;
+        background: linear-gradient(135deg, #ffffff 0%, #ebf8ff 100%);
+    }
+    .stat-mini.idle { 
+        border-left-color: #f39c12;
+        background: linear-gradient(135deg, #ffffff 0%, #fffaf0 100%);
+    }
+
+    .stat-mini h3 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        line-height: 1;
+    }
+
+    .stat-mini.active h3 { color: #27ae60; }
+    .stat-mini.transit h3 { color: #3498db; }
+    .stat-mini.idle h3 { color: #f39c12; }
+
+    .stat-mini p {
+        color: #7f8c8d;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+        .map-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        overflow: hidden;
+        height: 700px;
+        width: 70%;
+        position: relative;
+        margin: 24px auto; 
+        z-index: 1;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+
+    .legend {
+        position: absolute;
+        bottom: 24px;
+        right: 24px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        z-index: 1000;
+        min-width: 200px;
+    }
+
+    .legend h4 {
+        margin-bottom: 16px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: #555;
+    }
+
+    .legend-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        flex-shrink: 0;
+    }
+
+    .legend-color.active { background: #27ae60; }
+    .legend-color.transit { background: #3498db; }
+    .legend-color.idle { background: #f39c12; }
+
+    .transportista-list {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 24px;
+    }
+
+    .transportista-list h2 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+        font-size: 22px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .transportista-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+    }
+
+    .transportista-item:hover {
+        background: #f8f9fa;
+        transform: translateX(4px);
+    }
+
+    .transportista-item:last-child {
+        border-bottom: none;
+    }
+
+    .transportista-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+    }
+
+    .status-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        flex-shrink: 0;
+        box-shadow: 0 0 8px currentColor;
+    }
+
+    .status-dot.active { 
+        background: #27ae60;
+        box-shadow: 0 0 8px #27ae60;
+    }
+    .status-dot.transit { 
+        background: #3498db;
+        box-shadow: 0 0 8px #3498db;
+    }
+    .status-dot.idle { 
+        background: #f39c12;
+        box-shadow: 0 0 8px #f39c12;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(0.9); }
+    }
+
+    .transportista-details {
+        flex: 1;
+    }
+
+    .transportista-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 6px;
+        font-size: 15px;
+    }
+
+    .transportista-meta {
+        font-size: 13px;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .transportista-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge.transit {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge.idle {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .popup-content {
+        padding: 12px;
+    }
+
+    .popup-content h3 {
+        margin-bottom: 12px;
+        color: #2c3e50;
+        font-size: 16px;
+        font-weight: 600;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 8px;
+    }
+
+    .popup-content p {
+        margin: 8px 0;
+        font-size: 13px;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .popup-content strong {
+        color: #2c3e50;
+        min-width: 80px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .stats-bar {
+            grid-template-columns: 1fr;
+        }
+
+        .map-container {
+            height: 500px;
+        }
+
+        .legend {
+            bottom: 16px;
+            right: 16px;
+            padding: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>
+        <span></span>
+        Mapa de Transportistas en Tiempo Real
+    </h1>
+    <a href="{% url 'dashboard' %}" class="btn-back">
+        ← Volver atrás
+    </a>
+</div>
+
+<div class="stats-bar">
+    <div class="stat-mini active">
+        <h3 id="count-active">0</h3>
+        <p>En ruta activa</p>
+    </div>
+    <div class="stat-mini transit">
+        <h3 id="count-transit">0</h3>
+        <p>En tránsito</p>
+    </div>
+    <div class="stat-mini idle">
+        <h3 id="count-idle">0</h3>
+        <p>En espera</p>
+    </div>
+</div>
+
+<div class="map-container">
+    <div id="map"></div>
+    <div class="legend">
+        <h4>Estado de Vehículos</h4>
+        <div class="legend-item">
+            <div class="legend-color active"></div>
+            <span>En ruta activa</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color transit"></div>
+            <span>En tránsito</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color idle"></div>
+            <span>En espera</span>
+        </div>
+    </div>
+</div>
+
+<div class="transportista-list">
+    <h2>📋 Lista de Transportistas Activos</h2>
+    <div id="transportista-container"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const transportistas = [
+        {
+            id: 1,
+            nombre: "Juan Pérez",
+            patente: "ABCD-12",
+            empresa: "Transportes del Valle",
+            region: "Metropolitana",
+            telefono: "+56 9 1234 5678",
+            status: "active",
+            lat: -33.4489,
+            lng: -70.6693,
+            destino: "Centro de Distribución Norte"
+        },
+        {
+            id: 2,
+            nombre: "María González",
+            patente: "EFGH-34",
+            empresa: "Logística Express",
+            region: "Valparaíso",
+            telefono: "+56 9 8765 4321",
+            status: "transit",
+            lat: -33.0472,
+            lng: -71.6127,
+            destino: "Puerto de Valparaíso"
+        },
+        {
+            id: 3,
+            nombre: "Carlos Rojas",
+            patente: "IJKL-56",
+            empresa: "Frío Total",
+            region: "Metropolitana",
+            telefono: "+56 9 5555 1234",
+            status: "idle",
+            lat: -33.4372,
+            lng: -70.6506,
+            destino: "En base"
+        },
+        {
+            id: 4,
+            nombre: "Ana Martínez",
+            patente: "MNOP-78",
+            empresa: "Transportes del Valle",
+            region: "O'Higgins",
+            telefono: "+56 9 4444 5678",
+            status: "active",
+            lat: -34.1701,
+            lng: -70.7436,
+            destino: "Rancagua Centro"
+        },
+        {
+            id: 5,
+            nombre: "Pedro Silva",
+            patente: "QRST-90",
+            empresa: "Carga Rápida",
+            region: "Metropolitana",
+            telefono: "+56 9 3333 9876",
+            status: "transit",
+            lat: -33.3950,
+            lng: -70.5755,
+            destino: "Las Condes"
+        },
+        {
+            id: 6,
+            nombre: "Lucía Fernández",
+            patente: "UVWX-11",
+            empresa: "Logística Express",
+            region: "Metropolitana",
+            telefono: "+56 9 2222 4567",
+            status: "active",
+            lat: -33.5122,
+            lng: -70.7526,
+            destino: "Puente Alto"
+        },
+        {
+            id: 7,
+            nombre: "Roberto Muñoz",
+            patente: "YZAB-22",
+            empresa: "Frío Total",
+            region: "Maule",
+            telefono: "+56 9 7777 8888",
+            status: "idle",
+            lat: -35.4264,
+            lng: -71.6554,
+            destino: "En base"
+        },
+        {
+            id: 8,
+            nombre: "Carmen Torres",
+            patente: "CDEF-33",
+            empresa: "Transportes del Valle",
+            region: "Metropolitana",
+            telefono: "+56 9 6666 7777",
+            status: "transit",
+            lat: -33.4691,
+            lng: -70.6420,
+            destino: "Providencia"
+        }
+    ];
+
+    const map = L.map('map').setView([-33.4489, -70.6693], 10);
+
+    L.tileLayer('https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
+        attribution: '© Google Maps',
+        maxZoom: 20
+    }).addTo(map);
+
+    const statusColors = {
+        active: '#27ae60',
+        transit: '#3498db',
+        idle: '#f39c12'
+    };
+
+    const statusLabels = {
+        active: 'En ruta activa',
+        transit: 'En tránsito',
+        idle: 'En espera'
+    };
+
+    const markers = {};
+    transportistas.forEach(t => {
+        const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="
+                background: ${statusColors[t.status]};
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                border: 3px solid white;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+                animation: pulse 2s infinite;
+            "></div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+        });
+
+        const marker = L.marker([t.lat, t.lng], { icon }).addTo(map);
+        
+        marker.bindPopup(`
+            <div class="popup-content">
+                <h3>🚛 ${t.nombre}</h3>
+                <p><strong>Patente:</strong> ${t.patente}</p>
+                <p><strong>Empresa:</strong> ${t.empresa}</p>
+                <p><strong>Estado:</strong> ${statusLabels[t.status]}</p>
+                <p><strong>Destino:</strong> ${t.destino}</p>
+                <p><strong>Teléfono:</strong> ${t.telefono}</p>
+            </div>
+        `);
+
+        markers[t.id] = marker;
+    });
+
+    function updateStats() {
+        const active = transportistas.filter(t => t.status === 'active').length;
+        const transit = transportistas.filter(t => t.status === 'transit').length;
+        const idle = transportistas.filter(t => t.status === 'idle').length;
+
+        document.getElementById('count-active').textContent = active;
+        document.getElementById('count-transit').textContent = transit;
+        document.getElementById('count-idle').textContent = idle;
+    }
+
+    function renderList() {
+        const container = document.getElementById('transportista-container');
+        container.innerHTML = transportistas.map(t => `
+            <div class="transportista-item" onclick="focusTransportista(${t.id})">
+                <div class="transportista-info">
+                    <div class="status-dot ${t.status}"></div>
+                    <div class="transportista-details">
+                        <div class="transportista-name">${t.nombre}</div>
+                        <div class="transportista-meta">
+                            <span>🚗 ${t.patente}</span>
+                            <span>• ${t.empresa}</span>
+                            <span>• 📍 ${t.destino}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="badge ${t.status}">${statusLabels[t.status]}</span>
+            </div>
+        `).join('');
+    }
+
+    window.focusTransportista = function(id) {
+        const t = transportistas.find(tr => tr.id === id);
+        if (t && markers[id]) {
+            map.setView([t.lat, t.lng], 14);
+            markers[id].openPopup();
+        }
+    };
+
+    function simulateMovement() {
+        transportistas.forEach(t => {
+            if (t.status === 'active' || t.status === 'transit') {
+                t.lat += (Math.random() - 0.5) * 0.01;
+                t.lng += (Math.random() - 0.5) * 0.01;
+                
+                if (markers[t.id]) {
+                    markers[t.id].setLatLng([t.lat, t.lng]);
+                }
+            }
+        });
+    }
+
+    updateStats();
+    renderList();
+    setInterval(simulateMovement, 3000);
+</script>
+{% endblock %}

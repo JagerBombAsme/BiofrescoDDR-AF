@@ -38,11 +38,14 @@ class UnidadMedida(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class Producto(models.Model):
     codigo = models.CharField(max_length=50, unique=True)
     nombre = models.CharField(max_length=200)
-    unidad_base = models.ForeignKey(UnidadMedida, on_delete=models.PROTECT, related_name="productos_base")
+    unidad_base = models.ForeignKey(
+        UnidadMedida,
+        on_delete=models.PROTECT,
+        related_name="productos_base"
+    )
     stock_actual = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     stock_minimo = models.DecimalField(max_digits=10, decimal_places=2)
     descripcion = models.TextField(blank=True)
@@ -51,8 +54,34 @@ class Producto(models.Model):
 
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
+    
+    @property
+    def estado(self):
+        if self.stock_actual <= 0:
+            return "agotado"
+        if self.stock_actual < self.stock_minimo:
+            return "critico"
+        umbral_normal = self.stock_minimo + (self.stock_minimo / 2)
+        if self.stock_actual < umbral_normal:
+            return "bajo"
+        return "normal"
 
 
+class Transportista(models.Model):
+    nombre = models.CharField(max_length=150)
+    telefono = models.CharField(max_length=50, blank=True, null=True)
+    patente = models.CharField(max_length=20, blank=True, null=True)
+    empresa = models.CharField(max_length=150, blank=True, null=True)
+    region = models.CharField(max_length=120, blank=True, null=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        etiqueta = self.nombre
+        if self.patente:
+            etiqueta += f" ({self.patente})"
+        return etiqueta
+
+    
 class Movimiento(models.Model):
     TIPOS = [
         ('entrada', 'Entrada'),
@@ -61,7 +90,7 @@ class Movimiento(models.Model):
         ('ajuste', 'Ajuste'),
     ]
 
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto,null=True,blank=True,on_delete=models.SET_NULL)
     tipo = models.CharField(max_length=20, choices=TIPOS)
     unidad_ingreso = models.ForeignKey(UnidadMedida, on_delete=models.PROTECT, related_name="mov_unidad_ingreso")
     cantidad = models.DecimalField(max_digits=10, decimal_places=2)
@@ -77,17 +106,6 @@ class Movimiento(models.Model):
     def __str__(self):
         return f"{self.tipo} - {self.producto.nombre} ({self.cantidad})"
 
-    def save(self, *args, **kwargs):
-        cantidad_en_base = self.cantidad * self.factor
-
-        if self.tipo == 'entrada':
-            self.producto.stock_actual += cantidad_en_base
-        elif self.tipo in ['salida', 'merma']:
-            self.producto.stock_actual -= cantidad_en_base
-
-        self.producto.save()
-        super().save(*args, **kwargs)
-
 
 class Alerta(models.Model):
     TIPOS_ALERTA = [
@@ -96,7 +114,7 @@ class Alerta(models.Model):
         ('vencimiento', 'Próximo a Vencer'),
     ]
 
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
     tipo = models.CharField(max_length=20, choices=TIPOS_ALERTA)
     mensaje = models.TextField()
     activa = models.BooleanField(default=True)

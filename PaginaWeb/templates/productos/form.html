@@ -105,17 +105,23 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    const form = document.querySelector("form");
     const nombreInput = document.getElementById("nombre");
     const unidadSelect = document.getElementById("unidad_base");
     const preview = document.getElementById("preview");
 
+    // Detecta si el nombre ya tiene "(algo)" y devuelve solo el nombre base
+    function limpiarNombre(nombre) {
+        return nombre.replace(/\s*\(.*?\)\s*$/, "").trim();
+    }
+
     function pluralizar(txt) {
         txt = txt.toLowerCase().trim();
-        if (txt.endsWith("a")) return txt + "s";          // pera → peras
-        if (txt.endsWith("o")) return txt + "s";          // kilo → kilos
-        if (txt.endsWith("e")) return txt + "s";          // malla → mallas
-        if (txt.endsWith("l")) return txt + "es";         // papel → papeles
-        if (txt.endsWith("r")) return txt + "es";         // bolívar → bolívares
+        if (txt.endsWith("a")) return txt + "s";
+        if (txt.endsWith("o")) return txt + "s";
+        if (txt.endsWith("e")) return txt + "s";
+        if (txt.endsWith("l")) return txt + "es";
+        if (txt.endsWith("r")) return txt + "es";
         return txt;
     }
 
@@ -123,36 +129,34 @@ document.addEventListener("DOMContentLoaded", function () {
         return txt.charAt(0).toUpperCase() + txt.slice(1);
     }
 
-    function updateNombreFinal() {
-        const nombreBase = nombreInput.dataset.original || nombreInput.value.trim();
+    function generarNombreFinal() {
+        let nombreBase = limpiarNombre(nombreInput.value.trim());
         const unidad = unidadSelect.options[unidadSelect.selectedIndex]?.text || "";
 
-        if (!nombreBase || unidad === "Seleccione..." || !unidad) {
-            preview.value = "";
-            return;
+        if (!nombreBase || unidad === "Seleccione...") {
+            return nombreBase;
         }
 
         const unidadPlural = pluralizar(unidad);
-        const nombreFinal = `${capitalizar(nombreBase)} (${unidadPlural})`;
-
-        // Cambia el valor real del input nombre
-        nombreInput.value = nombreFinal;
-
-        // Vista previa
-        preview.value = nombreFinal;
+        return `${capitalizar(nombreBase)} (${unidadPlural})`;
     }
 
-    // Guardamos el nombre original antes de modificarlo
-    nombreInput.addEventListener("input", function () {
-        nombreInput.dataset.original = nombreInput.value.trim();
-        updateNombreFinal();
+    function updatePreview() {
+        preview.value = generarNombreFinal();
+    }
+
+    nombreInput.addEventListener("input", updatePreview);
+    unidadSelect.addEventListener("change", updatePreview);
+
+    // Cuando cargamos la página, limpiamos el nombre mostrado
+    nombreInput.value = limpiarNombre(nombreInput.value.trim());
+    updatePreview();
+
+    // ✔ Al enviar el formulario, se guarda correctamente el nombre final SIN duplicados
+    form.addEventListener("submit", function () {
+        nombreInput.value = generarNombreFinal();
     });
 
-    unidadSelect.addEventListener("change", updateNombreFinal);
-
-    // Inicializa al cargar la página
-    nombreInput.dataset.original = nombreInput.value.trim();
-    updateNombreFinal();
 });
 </script>
 

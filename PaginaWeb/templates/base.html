@@ -8,7 +8,6 @@
 
     <link rel="stylesheet" href="{% static 'css/adminstyles.css' %}">
     <style>
-        /* Botón de tema */
         .theme-toggle {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -65,7 +64,10 @@
                class="{% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
                 Proveedores
             </a>
-
+            <a href="{% url 'transportistas' %}"
+                        class="{% if request.resolver_match.url_name == 'transportistas' %}active{% endif %}">
+                            Transportistas
+            </a>
             <a href="{% url 'reportes' %}"
                class="{% if request.resolver_match.url_name == 'reportes' %}active{% endif %}">
                 Reportes

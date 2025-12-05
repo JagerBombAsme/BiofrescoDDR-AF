@@ -27,52 +27,49 @@
             Total de productos actualmente registrados en el sistema.
         </div>
     </div>
+        <div class="stat-card vertical blue"
+            style="--card-image: url('{% static 'img/Flota.png' %}');">
 
-    <!-- TARJETA 2 -->
-    <div class="stat-card vertical blue"
-         style="--card-image: url('{% static 'img/inventario.png' %}');">
+            <div class="stat-card__media" aria-hidden="true"></div>
 
-        <div class="stat-card__media" aria-hidden="true"></div>
+            <div class="stat-card__content">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-info">
+                    <h3>{{ movimientos_mes }}</h3>
+                    <p>Movimientos del mes</p>
+                </div>
+            </div>
 
-        <div class="stat-card__content">
-            <div class="stat-icon">📊</div>
-            <div class="stat-info">
-                <h3>{{ total_stock|floatformat:0 }}</h3>
-                <p>Stock total</p>
+            <div class="stat-description">
+                Total de entradas, salidas, mermas y ajustes registrados en los últimos 30 días.
             </div>
         </div>
-
-        <div class="stat-description">
-            Sumatoria de existencias disponibles.
-        </div>
-    </div>
 
     <!-- TARJETA 3 -->
-    <div class="stat-card vertical orange"
-         style="--card-image: url('{% static 'img/alerta.jpg' %}');">
+        <div class="stat-card vertical orange"
+            style="--card-image: url('{% static 'img/alerta.jpg' %}');">
 
-        <div class="stat-card__media" aria-hidden="true"
-             style="background-position: center 35%;"></div>
+            <div class="stat-card__media" aria-hidden="true"
+                style="background-position: center 35%;"></div>
 
-        <div class="stat-card__content">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-info">
-                <h3>{{ alertas_activas }}</h3>
-                <p>Alertas activas</p>
+            <div class="stat-card__content">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <h3>{{ alertas_activas }}</h3>
+                    <p>Alertas activas</p>
+                </div>
             </div>
-        </div>
+
 
         <div class="stat-description">
-            Alertas asociadas a stock bajo o movimientos recientes.
+            Alertas asociadas a stock bajo, fechas críticas o movimientos recientes.
         </div>
     </div>
 
 </div>
 
-<!-- ACTIVITY CARD -->
 <div class="activity-card">
     <h3>Actividad Reciente</h3>
-
     <table class="activity-table">
         <thead>
             <tr>
@@ -88,34 +85,16 @@
             <tr>
                 <td>{{ mov.fecha|date:"d/m/Y H:i" }}</td>
                 <td>{{ mov.producto.nombre }}</td>
-
                 <td>
-                    <span class="badge 
-                        {% if mov.tipo == 'entrada' %}success
-                        {% elif mov.tipo == 'salida' %}info
-                        {% elif mov.tipo == 'merma' %}danger
-                        {% else %}warning
-                        {% endif %}
-                    ">
+                    <span class="badge {% if mov.tipo == 'entrada' %}success{% elif mov.tipo == 'salida' %}info{% else %}danger{% endif %}">
                         {{ mov.get_tipo_display }}
                     </span>
                 </td>
-
-                <td>
-                    {{ mov.cantidad }} {{ mov.producto.unidad_base.nombre }}
-                </td>
-
+                <td>{{ mov.cantidad }} {{ mov.producto.get_unidad_medida_display }}</td>
                 <td>{{ mov.usuario.username }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" style="text-align:center; padding:20px;">
-                    No hay actividad reciente.
-                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-
 {% endblock %}

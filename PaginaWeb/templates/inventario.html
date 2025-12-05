@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Inventario{% endblock %}
 
 {% block content %}
@@ -9,10 +10,8 @@
 
 <div class="stats-grid">
 
-    
-    <div class="stat-card vertical">
-        <div class="stat-card__media" aria-hidden="true"></div>
-
+    <div class="stat-card vertical" style="--card-image: url('{% static "img/inventario1.png" %}');">
+        <div class="stat-card__media"></div>
         <div class="stat-card__content">
             <div class="stat-icon">P</div>
             <div class="stat-info">
@@ -20,60 +19,36 @@
                 <p>Productos activos</p>
             </div>
         </div>
-
         <div class="stat-description">
-            Cantidad total de productos registrados y activos en el inventario.
+            Total de productos registrados y disponibles en el inventario.
         </div>
     </div>
 
-    
-    <div class="stat-card vertical blue">
-        <div class="stat-card__media" aria-hidden="true"></div>
-
-        <div class="stat-card__content">
-            <div class="stat-icon">S</div>
-            <div class="stat-info">
-                <h3>{{ total_stock|default:"0" }}</h3>
-                <p>Stock total acumulado</p>
-            </div>
-        </div>
-
-        <div class="stat-description">
-            Sumatoria del stock disponible considerando todos los productos.
-        </div>
-    </div>
-
-    
-    <div class="stat-card vertical orange">
-        <div class="stat-card__media" aria-hidden="true"></div>
-
+    <div class="stat-card vertical orange" style="--card-image: url('{% static "img/inventario2.png" %}');">
+        <div class="stat-card__media"></div>
         <div class="stat-card__content">
             <div class="stat-icon">C</div>
             <div class="stat-info">
                 <h3>{{ criticos }}</h3>
-                <p>Productos críticos</p>
+                <p>Críticos</p>
             </div>
         </div>
-
         <div class="stat-description">
-            Productos con stock por debajo del mínimo y que requieren reposición urgente.
+            Productos con stock por debajo del nivel mínimo.
         </div>
     </div>
 
-    <!-- TARJETA 4 -->
-    <div class="stat-card vertical red">
-        <div class="stat-card__media" aria-hidden="true"></div>
-
+    <div class="stat-card vertical red" style="--card-image: url('{% static "img/inventario3.png" %}');">
+        <div class="stat-card__media"></div>
         <div class="stat-card__content">
             <div class="stat-icon">A</div>
             <div class="stat-info">
                 <h3>{{ agotados }}</h3>
-                <p>Productos agotados</p>
+                <p>Agotados</p>
             </div>
         </div>
-
         <div class="stat-description">
-            Productos sin stock disponible actualmente.
+            Productos sin stock disponible.
         </div>
     </div>
 
@@ -81,22 +56,20 @@
 
 <div class="filters-bar">
     <form method="get" class="filters">
-        <select name="categoria" class="filter-select">
-            <option value="">Categoría</option>
-            {% for c in categorias %}
-            <option value="{{ c.id }}" {% if request.GET.categoria == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nombre }}</option>
-            {% endfor %}
-        </select>
 
         <select name="estado" class="filter-select">
             <option value="">Estado</option>
-            <option value="agotado" {% if request.GET.estado == "agotado" %}selected{% endif %}>Agotado</option>
-            <option value="critico" {% if request.GET.estado == "critico" %}selected{% endif %}>Crítico</option>
-            <option value="bajo" {% if request.GET.estado == "bajo" %}selected{% endif %}>Bajo</option>
-            <option value="normal" {% if request.GET.estado == "normal" %}selected{% endif %}>Normal</option>
+            <option value="agotado" {% if estado_seleccionado == "agotado" %}selected{% endif %}>Agotado</option>
+            <option value="critico" {% if estado_seleccionado == "critico" %}selected{% endif %}>Crítico</option>
+            <option value="bajo" {% if estado_seleccionado == "bajo" %}selected{% endif %}>Bajo</option>
+            <option value="normal" {% if estado_seleccionado == "normal" %}selected{% endif %}>Normal</option>
         </select>
 
-        <input type="text" name="busqueda" class="filter-select" placeholder="Buscar por nombre o código" value="{{ request.GET.busqueda }}">
+        <input type="text"
+               name="busqueda"
+               class="filter-select"
+               placeholder="Buscar por nombre o código"
+               value="{{ busqueda|default:'' }}">
 
         <button class="btn-primary">Aplicar filtros</button>
     </form>
@@ -108,11 +81,9 @@
             <tr>
                 <th>Producto</th>
                 <th>Código</th>
-                <th>Categoría</th>
                 <th>Unidad</th>
                 <th>Stock</th>
-                <th>Stock mínimo</th>
-                <th>Proveedor</th>
+                <th>Mínimo</th>
                 <th>Estado</th>
             </tr>
         </thead>
@@ -121,35 +92,34 @@
             {% for p in productos %}
             <tr>
                 <td class="product-cell">
-                    <span class="product-icon">•</span> 
+                    <span class="product-icon">•</span>
                     {{ p.nombre }}
                 </td>
 
                 <td>{{ p.codigo }}</td>
 
-                <td>{{ p.categoria.nombre }}</td>
-
-                <td>{{ p.get_unidad_medida_display }}</td>
+                <td>{{ p.unidad_base.nombre|default:"-" }}</td>
 
                 <td>
                     {% if p.stock_estado == "agotado" %}
                         <span class="stock-critical">0</span>
                     {% else %}
-                        {{ p.stock_actual }}
+                        {{ p.stock_actual|floatformat:0 }}
                     {% endif %}
                 </td>
 
-                <td>{{ p.stock_minimo }}</td>
-
-                <td>{{ p.proveedor.nombre|default:"Sin proveedor" }}</td>
+                <td>{{ p.stock_minimo|floatformat:0 }}</td>
 
                 <td>
-                    {% if p.stock_estado == "agotado" %}
+                    {% if p.estado == "agotado" %}
                         <span class="badge danger">Agotado</span>
-                    {% elif p.stock_estado == "critico" %}
+
+                    {% elif p.estado == "critico" %}
                         <span class="badge danger">Crítico</span>
-                    {% elif p.stock_estado == "bajo" %}
+
+                    {% elif p.estado == "bajo" %}
                         <span class="badge warning">Bajo</span>
+
                     {% else %}
                         <span class="badge success">Normal</span>
                     {% endif %}

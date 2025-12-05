@@ -29,15 +29,15 @@
 
                 <td>
                     {% if p.stock_actual <= p.stock_minimo %}
-                        <span class="badge danger">{{ p.stock_actual }}</span>
+                        <span class="badge danger">{{ p.stock_actual|floatformat:0 }}</span>
                     {% elif p.stock_actual <= p.stock_minimo|add:p.stock_minimo %}
-                        <span class="badge warning">{{ p.stock_actual }}</span>
+                        <span class="badge warning">{{ p.stock_actual|floatformat:0 }}</span>
                     {% else %}
-                        <span class="badge success">{{ p.stock_actual }}</span>
+                        <span class="badge success">{{ p.stock_actual|floatformat:0 }}</span>
                     {% endif %}
                 </td>
 
-                <td>{{ p.stock_minimo }}</td>
+                <td>{{ p.stock_minimo|floatformat:0 }}</td>
 
                 <td style="text-align:center;">
                     <div class="product-actions">
